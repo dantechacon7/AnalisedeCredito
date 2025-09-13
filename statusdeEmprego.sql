@@ -3,12 +3,10 @@ SELECT
     CASE 
         WHEN unemployed = 0 THEN 'Trabalhando' 
         WHEN unemployed = 1 THEN 'Desempregado'
-    END AS desemprego,
-    COUNT(*) AS count
+    END AS empregabilidade,
+    COUNT(DISTINCT id) as volume_pessoas
 FROM 
     credito_experimento
-WHERE 
-    unemployed IN (0, 1)
 GROUP BY 
     unemployed;
 
