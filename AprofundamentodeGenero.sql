@@ -48,49 +48,25 @@ GROUP BY
 /* Resultado: 1 mulher é estudante. */
 
 /* Será que a baixa elegibilidade de cartão entre as mulheres se relaciona a uma baixa quantidade de propriedades (por propriedade, levamos em consideração as colunas own_property e own_car para essa análise) */
-WITH car_counts AS (
+WITH counts AS (
     SELECT 
-        COUNT(*) AS car_count
+        COUNT(DISTINCT CASE WHEN own_car = 1 THEN id END) AS car_owner_count,
+        COUNT(DISTINCT CASE WHEN own_property = 1 THEN id END) AS prop_owner_count,
+        COUNT(DISTINCT id) AS volume_pessoas,
+        COUNT(DISTINCT CASE WHEN gender = 1 THEN id END) AS volume_mulheres,
+        COUNT(DISTINCT CASE WHEN gender = 0 THEN id END) AS volume_homens,
+        
     FROM 
         credito_experimento
-    WHERE 
-        own_car = 1
-), property_counts AS (
-    SELECT 
-        COUNT(*) AS property_count
-    FROM 
-        credito_experimento
-    WHERE 
-        own_property = 1
-), total_count AS (
-    SELECT 
-        COUNT(*) AS total
-    FROM 
-        credito_experimento
-),
-gender_counts AS (
-    SELECT 
-        gender,
-        COUNT(*) AS count
-    FROM 
-        credito_experimento
-    GROUP BY 
-        gender
 )
 SELECT 
-    car_counts.car_count * 1.0 / total_count.total AS car_proportion,
-    property_counts.property_count * 1.0 / total_count.total AS property_proportion,
+    car_owner_count * 1.0 / volume_pessoas AS car_proportion,
+    prop_owner_count * 1.0 / volume_pessoas AS property_proportion,
     CASE 
         WHEN gender = 0 THEN 'masculino' 
         WHEN gender = 1 THEN 'feminino'
     END AS genero
-FROM 
-    car_counts, 
-    property_counts, 
-    total_count,
-    gender_counts
-WHERE 
-    gender_counts.gender = 1;
+FROM counts
 /* Resultado: 36.77% das pessoas com carro são mulheres, e 67.15% das pessoas com propriedade são mulheres. Em linhas gerais, a detenção de propriedade não se mostra um item relevante, mas sim, a de pessoas com carro.*/
 /* A quantidade de tempo empregada é um determinante positivo para elegibilidade do cartão? */
 SELECT 
