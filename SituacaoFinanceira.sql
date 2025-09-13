@@ -15,31 +15,19 @@ GROUP BY
 /* Resultado: Working = 4960; Commercial associate = 2312; Pensioner = 1712; State servant = 722; Student = 3 */
 
 /* Qual a proporção dos tipos de renda nesse conjunto de dados? 
-Deve ser criada uma primeira subquery determinando a quantidade de indivíduos em cada tipo de renda (income_type); 
-Em seguida, você deve verificar quantas pessoas constam no dataser para definirmos a base da propoção. 
-Por fim, a proporção na query final levará em consideração as duas qtds calculadas. */
-
-WITH income_counts AS (
-    SELECT 
-        income_type,
-        COUNT(*) AS count
-    FROM 
-        credito_experimento
-    GROUP BY 
-        income_type
-), total_count AS (
-    SELECT 
-        COUNT(*) AS total
-    FROM 
-        credito_experimento
-)
+Aqui podemos puxar diretamente numa única seleção a dimensão - income_type, o volume total de pessoas, e uma coluna de proporção percentual
+com uma expressão que retorna a porcentagem de pessoas de cada income_type em relação ao total geral da base, com duas casas decimais, utilizando funções de agregação (COUNT), 
+função janela (SUM(...) OVER ()) - indica que a soma será feita sobre todas as linhas da consulta, sem partição nem ordenação, ou seja, pega o total geral., multiplicação e arredondamento (ROUND). */
 SELECT 
-    ic.income_type,
-    ic.count,
-    ic.count * 1.0 / tc.total AS proportion
-FROM 
-    income_counts ic,
-    total_count tc;
+    income_type,
+    COUNT(DISTINCT id) AS total_pessoas,
+    ROUND(
+        (COUNT(DISTINCT id) * 100.0) / SUM(COUNT(DISTINCT id)) OVER (),
+        2
+    ) AS proporcao_percentual
+FROM credito_experimento
+GROUP BY income_type
+
 
 /* Resultado:
 Working tem 4960 registros e apresenta uma proporção de 51.08%; Commercial associate tem 2312 registros e apresenta uma proporção de 23.81%;
