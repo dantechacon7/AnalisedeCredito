@@ -5,37 +5,29 @@ FROM credito_experimento;
 
 */ Descubrir a proporção de indivíduos que possuem carro e propriedade. */
   
-WITH car_counts AS (
+WITH counts AS (
     SELECT 
-        COUNT(*) AS car_count
-    FROM 
-        credito_experimento
-    WHERE 
-        own_car = 1
-), property_counts AS (
-    SELECT 
-        COUNT(*) AS property_count
-    FROM 
-        credito_experimento
-    WHERE 
-        own_property = 1
-), total_count AS (
-    SELECT 
-        COUNT(*) AS total
+        COUNT(DISTINCT CASE WHEN own_car = 1 THEN id END) AS car_owner_count,
+        COUNT(DISTINCT CASE WHEN own_property = 1 THEN id END) AS prop_owner_count,
+        COUNT(DISTINCT id) AS volume_pessoas,
+        COUNT(DISTINCT CASE WHEN gender = 1 THEN id END) AS volume_mulheres,
+        COUNT(DISTINCT CASE WHEN gender = 0 THEN id END) AS volume_homens,
+        
     FROM 
         credito_experimento
 )
 SELECT 
-    car_counts.car_count * 1.0 / total_count.total AS car_proportion,
-    property_counts.property_count * 1.0 / total_count.total AS property_proportion
-FROM 
-    car_counts, 
-    property_counts, 
-    total_count;
+    car_owner_count * 1.0 / volume_pessoas AS car_proportion,
+    prop_owner_count * 1.0 / volume_pessoas AS property_proportion,
+    CASE 
+        WHEN gender = 0 THEN 'masculino' 
+        WHEN gender = 1 THEN 'feminino'
+    END AS genero
+FROM counts
   
 */ A mesmoa lógica das proporções anteriores foi utilizada aqui. Deve-se, inicialmente, 
   medir a quantidade de pessoas que possuem propriedades, assim como a quantidade de pessoas que possuem carro. 
 Após isso, levanta-se a quantidade de pessoas no dataset. 
 A proporção é calcula separadamente, primeiro definindo a propoção de pessoas com carro e, após isso, a proporção de pessoas com propriedade. 
-Resultado: car_proportion = 0.36770007209805333 (36.77%); property_proportion = 0.671541868369554 (67.15%).
+Resultado: car_proportion = 36.77%; property_proportion = 67.15%.
   */
